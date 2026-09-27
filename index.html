@@ -171,12 +171,12 @@ td.na{color:var(--muted)}
       <div class="f"><label for="fixed">额外固定费 <em>/单</em></label><div class="in"><input id="fixed" type="number" value="0" step="0.01"><span class="cu">—</span></div></div>
       <div class="f"><label for="aff">达人佣金 <em>联盟带货</em></label><div class="in"><input id="aff" type="number" step="1"><span>%</span></div></div>
       <div class="f"><label for="bonus">提成 <em>/单</em></label><div class="in"><input id="bonus" type="number" value="0" step="0.01"><span class="cu">—</span></div></div>
-      <div class="f"><label for="vat">增值税率 <em>售价含税时</em></label><div class="in"><input id="vat" type="number" step="0.5"><span>%</span></div></div>
-      <div class="f"><label for="wht">所得税代扣</label><div class="in"><input id="wht" type="number" step="0.1"><span>%</span></div></div>
+      <div class="f"><label for="vat"><span class="vatN">增值税率</span> <em>售价含税时</em></label><div class="in"><input id="vat" type="number" step="0.5"><span>%</span></div></div>
+      <div class="f"><label for="wht"><span class="whtN">所得税代扣</span></label><div class="in"><input id="wht" type="number" step="0.1"><span>%</span></div></div>
     </div>
     <p class="hint" id="tierHint" hidden></p>
     <div style="display:flex;flex-direction:column;gap:6px;margin-top:10px">
-      <label class="tog"><input id="whtOn" type="checkbox"> 把所得税代扣计为成本（保守口径）</label>
+      <label class="tog"><input id="whtOn" type="checkbox"> 把<span class="whtN2">所得税代扣</span>计为成本（保守口径）</label>
     </div>
   </div>
 
@@ -356,8 +356,8 @@ td.na{color:var(--muted)}
       <div class="f"><label for="sFxLoss">汇损 <em>回款换汇</em></label><div class="in"><input id="sFxLoss" type="number" value="1.5" step="0.1"><span>%</span></div></div>
       <div class="f"><label for="sRet">退货+客诉摊销</label><div class="in"><input id="sRet" type="number" value="3" step="0.5"><span>%</span></div></div>
       <div class="f"><label for="sTariff">关税+清关 <em>按货值</em></label><div class="in"><input id="sTariff" type="number" value="0" step="1"><span>%</span></div></div>
-      <div class="f"><label for="sVat">增值税率</label><div class="in"><input id="sVat" type="number" step="0.5"><span>%</span></div></div>
-      <div class="f"><label for="sWht">所得税代扣 <em>计入成本</em></label><div class="in"><input id="sWht" type="number" step="0.1"><span>%</span></div></div>
+      <div class="f"><label for="sVat"><span class="vatN">增值税率</span></label><div class="in"><input id="sVat" type="number" step="0.5"><span>%</span></div></div>
+      <div class="f"><label for="sWht"><span class="whtN">所得税代扣</span> <em>计入成本</em></label><div class="in"><input id="sWht" type="number" step="0.1"><span>%</span></div></div>
     </div>
   </details>
 </section>
@@ -465,7 +465,7 @@ Object.assign(MARKETS,{
     notes:["<b>GST 10%：</b>澳洲售价含 GST，按售价 ÷ 1.1 计算实收。"],
     platforms:{amz:{name:"Amazon AU",comm:15,minfee:0,aff:0,note:"<b>Amazon AU：</b>大部分类目佣金约 8–15%。"+REF},shop:SHOP(1.75,0.30,"AUD")}},
 });
-const SEA=(name,cur,vat,price,sp,lz,tt,vatName,extra)=>({name,region:"东南亚",cur,vat,wht:0,price,
+const SEA=(name,cur,vat,price,sp,lz,tt,vatName,extra)=>({name,region:"东南亚",cur,vat,wht:0,price,vatName,
   notes:[`<b>${vatName} ${vat}%：</b>按售价含税计算实收。跨境店（CNSC/LGS）和本土店的税务处理不同，跨境店通常不需要在这里扣税，可把增值税率改成 0。`+(extra||"")],
   platforms:{shopee:{name:"Shopee",comm:sp,minfee:0,aff:0,note:"<b>Shopee：</b>"+REF},
     lazada:{name:"Lazada",comm:lz,minfee:0,aff:0,note:"<b>Lazada：</b>"+REF},
@@ -486,6 +486,9 @@ Object.assign(MARKETS,{
 });
 MARKETS.MX.region="美洲"; MARKETS.US.region="美洲";
 const CUSTOM_M=MARKETS.CUSTOM; delete MARKETS.CUSTOM; CUSTOM_M.region="其他"; MARKETS.CUSTOM=CUSTOM_M;
+
+const TAXNAMES={MX:["IVA","ISR 代扣"],US:["销售税","所得税代扣"],CA:["GST/HST","所得税代扣"],BR:["增值税","综合税负"],CL:["IVA","所得税代扣"],CO:["IVA","Retención 代扣"],UK:["VAT","所得税代扣"],DE:["VAT","所得税代扣"],FR:["VAT","所得税代扣"],ES:["VAT","所得税代扣"],IT:["VAT","所得税代扣"],JP:["消费税","所得税代扣"],AU:["GST","所得税代扣"],SA:["VAT","所得税代扣"],AE:["VAT","所得税代扣"]};
+function TAX(){const m=MARKETS[market];const t=TAXNAMES[market];return {v:t?t[0]:(m.vatName||"增值税"),w:t?t[1]:"所得税代扣"};}
 const CURS=["USD","MXN","BRL","CAD","EUR","GBP","JPY","KRW","AUD","SGD","MYR","THB","IDR","PHP","VND","SAR","AED","CLP","COP","PEN","ARS","TRY","PLN"];
 const FALLBACK={"AED":0.545769,"ARS":226.476278,"AUD":0.211976,"BRL":0.769408,"CAD":0.209809,"CHF":0.123109,"CLP":143.112877,"CNY":1,"COP":484.045016,"CZK":3.196931,"DKK":0.975684,"EUR":0.130531,"GBP":0.112301,"HKD":1.165337,"HUF":47.619048,"IDR":2652.519894,"ILS":0.453767,"INR":14.265132,"JPY":23.416463,"KRW":203.086921,"MXN":2.602811,"MYR":0.606575,"NOK":1.412855,"NZD":0.263856,"PEN":0.505854,"PHP":9.345794,"PLN":0.570646,"RON":0.690942,"SAR":0.557287,"SEK":1.476287,"SGD":0.189662,"THB":4.963575,"TRY":7.251632,"TWD":4.739336,"USD":0.14861,"VND":3875.968992,"ZAR":2.423988,"UYU":5.96248}; /* 2026-09-27 汇率，仅在获取不到实时汇率时使用 */
 
@@ -498,7 +501,7 @@ const pct=v=>(v*100).toFixed(1)+"%";
 
 /* ---------- 选择器 ---------- */
 function fillCountry(){
-  const groups={};Object.entries(MARKETS).forEach(([k,m])=>{(groups[m.region||"其他"]=groups[m.region||"其他"]||[]).push(`<option value="${k}">${m.name}（${m.cur}）</option>`);});
+  const groups={};Object.entries(MARKETS).forEach(([k,m])=>{(groups[m.region||"其他"]=groups[m.region||"其他"]||[]).push(`<option value="${k}">${m.name}${k==="CUSTOM"?"":" "+k} · ${m.cur}</option>`);});
   $("country").innerHTML=["美洲","欧洲","亚太","东南亚","中东","其他"].filter(g=>groups[g]).map(g=>`<optgroup label="${g}">${groups[g].join("")}</optgroup>`).join("");
 }
 function fillPlatform(){const p=MARKETS[market].platforms;$("platform").innerHTML=Object.entries(p).map(([k,v])=>`<option value="${k}">${v.name}</option>`).join("");plat=Object.keys(p)[0];$("platform").value=plat;}
@@ -518,6 +521,10 @@ function applyPlatform(){
   labels(); calc();
 }
 function labels(){
+  const tx=TAX();
+  document.querySelectorAll(".whtN2").forEach(e=>e.textContent=tx.w.includes("代扣")?tx.w:tx.w+"代扣");
+  document.querySelectorAll(".vatN").forEach(e=>e.textContent=(tx.v==="增值税"?"增值税率":"增值税率（"+tx.v+"）"));
+  document.querySelectorAll(".whtN").forEach(e=>e.textContent=tx.w==="所得税代扣"?"所得税代扣":"所得税代扣（"+tx.w.replace(" 代扣","")+"）");
   document.querySelectorAll(".cu").forEach(e=>e.textContent=cur);
   $("priceNote").textContent=n("vat")>0?"含税":"不含税";
   const m=MARKETS[market], p=m.platforms[plat];
@@ -572,14 +579,14 @@ function base(P,o){
   const commAmt=Math.max(P*n("comm")/100, n("minfee"));
   const tierFee=p.tier?p.tier(P):0;
   const items=[
-    ["增值税 "+vat+"%", P-net],
+    [TAX().v+" "+vat+"%", P-net],
     ["产品成本", v("cost")*fx],
     ["头程 + 关税", v("leg")*fx + v("cost")*fx*v("tariff")/100],
     ["尾程 / 仓配", v("last")],
     ["平台佣金 + 服务费", commAmt + P*n("extra")/100],
     ["平台固定费", tierFee + n("fixed")],
     ["达人佣金", P*n("aff")/100],
-    ["所得税代扣", $("whtOn").checked? net*n("wht")/100 : 0],
+    [TAX().w, $("whtOn").checked? net*n("wht")/100 : 0],
     ["退货损耗 + 提成", P*v("ret")/100 + v("bonus")],
   ];
   return {net,items,total:items.reduce((s,i)=>s+i[1],0),tierFee};
@@ -712,7 +719,7 @@ function niceUp(P){
 }
 function calcNew(){
   const m=n("nMargin")/100, Rs=n("nRoas"), Rn=n("nRoasNew"), p=MARKETS[market].platforms[plat];
-  $("nPlat").textContent=`当前平台：${MARKETS[market].name} ${p.name} · 佣金 ${n("comm")}%${n("extra")?" + 服务费 "+n("extra")+"%":""} · 达人 ${n("aff")}% · 增值税 ${n("vat")}%${$("whtOn").checked&&n("wht")?" · 代扣 "+n("wht")+"%":""}`;
+  $("nPlat").textContent=`当前平台：${MARKETS[market].name} ${p.name} · 佣金 ${n("comm")}%${n("extra")?" + 服务费 "+n("extra")+"%":""} · 达人 ${n("aff")}% · ${TAX().v} ${n("vat")}%${$("whtOn").checked&&n("wht")?" · "+TAX().w+" "+n("wht")+"%":""}`;
   const raw=nMin(m,Rs), be=nMin(0,Rs);
   if(raw==null){$("nPrice").textContent="无法达到";$("nPrice").style.color="var(--bad)";$("nPriceSub").textContent="比例类成本加广告费已超过 "+(100-m*100).toFixed(0)+"%，请降低目标利润率或提高 ROAS";["nBe","nProfit","nNew","nBeRoas"].forEach(i=>$(i).textContent="—");$("nVerdict").textContent="";$("nComp2").hidden=true;}
   else{
@@ -750,10 +757,10 @@ function stockMode(rate,days){
   const fx=n("fx")||1, P=n("sPrice")/fx, vat=n("sVat"), net=P/(1+vat/100);
   const cost=n("sCost"), head=n("sWeight")*rate, pack=n("sPack");
   const lines=[
-    ["增值税",P-net],["进货成本",cost],["头程运费",head],["关税+清关",cost*n("sTariff")/100],
+    [TAX().v,P-net],["进货成本",cost],["头程运费",head],["关税+清关",cost*n("sTariff")/100],
     ["海外仓上架+操作",n("sWh")],["尾程派送",n("sLast")/fx],["包材",pack],
     ["广告费",P*n("sAcos")/100],["平台佣金",P*n("sComm")/100],["达人佣金",P*n("sAff")/100],
-    ["汇损",P*n("sFxLoss")/100],["退货+客诉摊销",P*n("sRet")/100],["所得税代扣",net*n("sWht")/100]
+    ["汇损",P*n("sFxLoss")/100],["退货+客诉摊销",P*n("sRet")/100],[TAX().w,net*n("sWht")/100]
   ].filter(l=>Math.abs(l[1])>1e-9);
   const total=lines.reduce((s,l)=>s+l[1],0), profit=P-total, ad=P*n("sAcos")/100, pre=profit+ad;
   const qty=Math.ceil(n("sDaily")*days*n("sMult"));
