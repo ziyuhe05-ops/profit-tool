@@ -117,6 +117,11 @@ details.adv summary{cursor:pointer;color:var(--accent);font-size:13px;font-weigh
 .rp button,.usebtn{font:500 13px var(--sans);color:#fff;background:var(--accent);border:0;border-radius:8px;padding:7px 12px;cursor:pointer}
 .usebtn{background:none;color:var(--accent);border:1px solid var(--accent);padding:2px 8px;font-size:11.5px}
 td.na{color:var(--muted)}
+.seg{display:inline-flex;background:var(--soft);border:1px solid var(--line);border-radius:9px;padding:3px;gap:2px}
+.seg button{font:500 12.5px var(--sans);color:var(--muted);background:none;border:0;border-radius:7px;padding:5px 10px;cursor:pointer}
+.seg button[aria-checked="true"]{background:var(--panel);color:var(--accent);box-shadow:0 1px 2px rgba(0,0,0,.08)}
+.mrow{display:flex;align-items:center;gap:10px;margin-top:8px}
+.mrow input[type=range]{flex:1;min-width:0}
 .ptitle{font-size:12px;color:var(--muted);font-weight:600;letter-spacing:.04em;margin-bottom:12px}
 </style>
 </head><body>
@@ -182,8 +187,19 @@ td.na{color:var(--muted)}
 
   <div class="group">
     <div class="gt">广告与规模</div>
-    <div class="roas"><label for="roas" style="font-size:13px">广告 ROAS <em style="font-style:normal;color:var(--muted);font-size:12px">按售价 GMV</em></label><b id="roasV">3.50×</b></div>
-    <input id="roas" type="range" min="1" max="8" step="0.05" value="3.5">
+    <div class="roas">
+      <div class="seg" role="radiogroup" aria-label="投放口径">
+        <button type="button" role="radio" data-m="roas" aria-checked="true">按 ROAS</button>
+        <button type="button" role="radio" data-m="roi" aria-checked="false">按 ROI</button>
+      </div>
+      <b id="roasV">3.50×</b>
+    </div>
+    <div class="mrow">
+      <input id="metricSl" type="range" min="0.5" max="10" step="0.05" value="3.5" aria-label="拖动调整">
+      <div class="in" style="width:110px"><input id="metricIn" type="number" step="0.05" value="3.5" aria-label="数值"><span id="metricU">×</span></div>
+    </div>
+    <input id="roas" type="hidden" value="3.5">
+    <p class="hint" id="metricHint">—</p>
     <div class="fields" style="margin-top:10px">
       <div class="f full"><label for="daily">日订单量</label><div class="in"><input id="daily" type="number" value="50" step="1"><span>单</span></div></div>
     </div>
@@ -219,9 +235,9 @@ td.na{color:var(--muted)}
       <div class="tot" style="border:0;margin:0"><span>单均净利</span><span id="tProfit">—</span></div>
     </section>
     <section class="panel">
-      <div class="ptitle">ROAS 敏感度</div>
+      <div class="ptitle">ROAS / ROI 敏感度</div>
       <div class="tw"><table>
-        <thead><tr><th>ROAS</th><th>广告费</th><th>单均净利</th><th>净利率</th></tr></thead>
+        <thead><tr><th>ROAS</th><th>ROI</th><th>广告费</th><th>单均净利</th><th>净利率</th></tr></thead>
         <tbody id="sens"></tbody>
       </table></div>
     </section>
@@ -593,26 +609,35 @@ function base(P,o){
 }
 function calc(){
   if(typeof calcStock==="function"&&$("sPrice").value)calcStock();
-  const P=n("price"), fx=n("fx"), R=n("roas");
+  const P=n("price"), fx=n("fx");
   if(!P) return;
-  const b=base(P), ad=R>0?P/R:0, profit=P-b.total-ad, margin=profit/P;
-  const room=P-b.total, be=room>0?P/room:Infinity, ok=profit>=0;
+  const b=base(P), room=P-b.total, be=room>0?P/room:Infinity;
+  const mv=parseFloat($("metricIn").value);
+  let R;
+  if(metric==="roi"){ R=(room>0&&mv>-1)?P*(1+mv)/room:Infinity; }
+  else R=mv>0?mv:Infinity;
+  $("roas").value=isFinite(R)?R:1e9;
+  const ad=isFinite(R)&&R>0?P/R:0, profit=P-b.total-ad, margin=profit/P, ok=profit>=0;
+  const roi=ad>0?profit/ad:0;
   const p=MARKETS[market].platforms[plat];
   $("tierHint").hidden=!p.tier; if(p.tier) $("tierHint").textContent=p.tierText;
-  $("roasV").textContent=R.toFixed(2)+"×";
+  $("roasV").textContent=metric==="roi"?(isFinite(mv)?mv.toFixed(2):"—"):(isFinite(R)?R.toFixed(2)+"×":"—");
+  $("metricHint").innerHTML=metric==="roi"
+    ?`ROI = 单均净利 ÷ 广告费（1 表示每花 1 块广告费净赚 1 块，0 为保本）。等效 ROAS <b>${isFinite(R)?R.toFixed(2)+"×":"—"}</b>`
+    :`ROAS = 售价 GMV ÷ 广告费。等效 ROI <b>${ad>0?roi.toFixed(2):"—"}</b>（单均净利 ÷ 广告费）`;
   $("profit").textContent=money(profit); $("profit").style.color=ok?"var(--good)":"var(--bad)";
   $("profitSub").textContent="≈ ¥"+(fx?profit/fx:0).toFixed(2)+" · 售价 "+money(P)+(n("vat")>0?"（不含税 "+money(b.net)+"）":"");
   $("status").textContent=ok?"盈利中":"亏损中"; $("status").className="pill "+(ok?"ok":"no");
-  $("gap").textContent=isFinite(be)?"当前 ROAS 比保本线"+(R>=be?"高 ":"低 ")+Math.abs((R/be-1)*100).toFixed(0)+"%":"成本已超过售价，无法保本";
+  $("gap").textContent=!isFinite(be)?"成本已超过售价，无法保本":metric==="roi"?(ok?"每花 1 元广告费净赚 "+roi.toFixed(2)+" 元":"每花 1 元广告费亏 "+Math.abs(roi).toFixed(2)+" 元"):"当前 ROAS 比保本线"+(R>=be?"高 ":"低 ")+Math.abs((R/be-1)*100).toFixed(0)+"%";
   $("kMargin").textContent=pct(margin); $("kMargin").style.color=ok?"var(--good)":"var(--bad)";
   $("kBe").textContent=isFinite(be)?be.toFixed(2)+"×":"—";
-  $("kBeS").textContent=isFinite(be)?"广告费上限 "+money(room)+"（售价 "+pct(room/P)+"）":"先降成本或提价";
+  $("kBeS").textContent=isFinite(be)?"即保本 ROI 0 · 广告费上限 "+money(room):"先降成本或提价";
   $("kAd").textContent=money(ad); $("kAdS").textContent="占售价 "+pct(ad/P);
   const d=n("daily"); $("kDay").textContent=money(profit*d);
   $("kMonth").textContent="月 "+money(profit*d*30)+" · "+d+" 单/天";
 
   const colors=["--c7","--c1","--c2","--c3","--c5","--c8","--c6","--c4","--c7"];
-  const all=[...b.items.filter(i=>Math.abs(i[1])>1e-9),["广告费 (ROAS "+R.toFixed(2)+"×)",ad]];
+  const all=[...b.items.filter(i=>Math.abs(i[1])>1e-9),["广告费 (ROAS "+(isFinite(R)?R.toFixed(2):"—")+"× · ROI "+roi.toFixed(2)+")",ad]];
   $("bars").innerHTML=all.map((it,i)=>{
     const c=i===all.length-1?"--bad":colors[i%colors.length], w=Math.min(100,it[1]/P*100);
     return `<div class="row"><div class="n"><span class="dot" style="background:var(${c})"></span>${it[0]}</div><div class="a">${money(it[1])} <small>· ${w.toFixed(0)}%</small></div><div class="bar"><i style="width:${w}%;background:var(${c})"></i></div></div>`;
@@ -620,27 +645,43 @@ function calc(){
   $("tCost").textContent=money(b.total+ad);
   $("tProfit").textContent=money(profit); $("tProfit").style.color=ok?"var(--good)":"var(--bad)";
 
-  let pts=[1,1.5,2,2.5,3,4,5,6].map(r=>({r}));
+  let pts=[1,1.5,2,2.5,3,4,5,6,8,10].map(r=>({r}));
   if(isFinite(be)&&be>0) pts.push({r:be,be:1});
-  pts.push({r:R,cur:1});
+  if(isFinite(R)) pts.push({r:R,cur:1});
   pts=pts.filter(q=>q.cur||q.be||!pts.some(o=>(o.cur||o.be)&&Math.abs(o.r-q.r)<0.001)).sort((a,c)=>a.r-c.r);
   $("sens").innerHTML=pts.map(q=>{
     const a=P/q.r, pr=P-b.total-a, cls=q.cur?"cur":q.be?"be":"";
     const tag=q.cur?'<span class="tag c">当前</span>':q.be?'<span class="tag b">保本</span>':"";
-    return `<tr class="${cls}"><td>${q.r.toFixed(2)}×${tag}</td><td>${money(a)}</td><td class="${pr>=0?"pos":"neg"}">${money(pr)}</td><td class="${pr>=0?"pos":"neg"}">${pct(pr/P)}</td></tr>`;
+    return `<tr class="${cls}"><td>${q.r.toFixed(2)}×${tag}</td><td class="${pr>=0?"pos":"neg"}">${(pr/a).toFixed(2)}</td><td>${money(a)}</td><td class="${pr>=0?"pos":"neg"}">${money(pr)}</td><td class="${pr>=0?"pos":"neg"}">${pct(pr/P)}</td></tr>`;
   }).join("");
   if(typeof calcPrice==="function"&&$("tMargin"))calcPrice();
   if(typeof calcPromo==="function"&&$("pDisc"))calcPromo();
   if(typeof calcNew==="function"&&$("nCost"))calcNew();
 }
 
+
+/* ---------- ROAS / ROI 切换 ---------- */
+let metric="roas";
+function syncSl(){const v=parseFloat($("metricIn").value);const sl=$("metricSl");if(isFinite(v))sl.value=Math.min(Math.max(v,+sl.min),+sl.max);}
+$("metricIn").addEventListener("input",()=>{syncSl();calc();});
+$("metricSl").addEventListener("input",()=>{$("metricIn").value=$("metricSl").value;calc();});
+document.querySelectorAll(".seg button").forEach(btn=>btn.addEventListener("click",()=>{
+  const m=btn.dataset.m; if(m===metric) return;
+  const P=n("price"), b=base(P), room=P-b.total, R=n("roas");
+  let v;
+  if(m==="roi"){ const ad=P/R; v=ad>0?(room-ad)/ad:0; $("metricSl").min="-0.9"; $("metricSl").max="5"; $("metricU").textContent=""; }
+  else { v=R; $("metricSl").min="0.5"; $("metricSl").max="10"; $("metricU").textContent="×"; }
+  metric=m;
+  document.querySelectorAll(".seg button").forEach(x=>x.setAttribute("aria-checked",x.dataset.m===m));
+  $("metricIn").value=isFinite(v)?(+v.toFixed(2)):0; syncSl(); calc();
+}));
 /* ---------- 事件 ---------- */
 $("country").addEventListener("change",e=>{market=e.target.value;fillPlatform();applyMarket();});
 $("platform").addEventListener("change",e=>{plat=e.target.value;applyPlatform();const p=MARKETS[market].platforms[plat];$("sComm").value=p.comm;$("sAff").value=p.aff;calcStock();});
 $("cur").addEventListener("change",e=>{cur=e.target.value;manual=false;applyFx();labels();calc();});
 $("fx").addEventListener("input",()=>{manual=true;fxUI();});
 $("fxReset").addEventListener("click",()=>{manual=false;applyFx();calc();});
-["price","fx","cost","leg","tariff","last","ret","comm","minfee","extra","fixed","aff","bonus","vat","wht","roas","daily"].forEach(id=>$(id).addEventListener("input",()=>{if(id==="vat")labels();calc();}));
+["price","fx","cost","leg","tariff","last","ret","comm","minfee","extra","fixed","aff","bonus","vat","wht","daily"].forEach(id=>$(id).addEventListener("input",()=>{if(id==="vat")labels();calc();}));
 $("whtOn").addEventListener("change",calc);
 
 
