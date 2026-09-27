@@ -1,0 +1,800 @@
+<!doctype html>
+<html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>跨境利润工作台</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&family=Noto+Sans+SC:wght@400;500;700&display=swap">
+<style>
+:root{
+  color-scheme:light;
+  --bg:#f5f4f7; --panel:#ffffff; --ink:#1c1b22; --muted:#6b6875; --line:#e5e3ea; --soft:#f0eef4;
+  --accent:#4b3fd6; --accent-soft:#ebe9fd;
+  --good:#12805c; --good-soft:#e2f4ec; --bad:#c62f2f; --bad-soft:#fbe7e7; --warn:#a56200;
+  --c1:#3d5afe; --c2:#7c4dff; --c3:#00897b; --c4:#ef6c00; --c5:#8d6e63; --c6:#d6006f; --c7:#546e7a; --c8:#9e9d24;
+  --sans:"IBM Plex Sans","Noto Sans SC","PingFang SC","Microsoft YaHei",system-ui,sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme: dark){:root{
+  color-scheme:dark;
+  --bg:#131218; --panel:#1c1b22; --ink:#efeef4; --muted:#a29fad; --line:#2e2c36; --soft:#25232c;
+  --accent:#9d94ff; --accent-soft:#2b2750;
+  --good:#3fcf95; --good-soft:#13301f; --bad:#ff6b6b; --bad-soft:#3a1717; --warn:#f0a53a;
+  --c1:#7b8cff; --c2:#a98bff; --c3:#4fc3b4; --c4:#ffa04d; --c5:#bca297; --c6:#ff4fa3; --c7:#90a4ae; --c8:#cddc39;
+}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--sans);font-size:14px;line-height:1.5}
+.wrap{max-width:1240px;margin:0 auto;padding:24px 20px 48px}
+header{margin-bottom:16px}
+h1{font-size:22px;margin:0;font-weight:600}
+.sub{color:var(--muted);font-size:13px;margin:4px 0 0}
+.market{display:flex;flex-wrap:wrap;gap:12px;align-items:flex-end;background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:14px 18px;margin-bottom:20px}
+.market .f{min-width:180px;flex:1}
+select{width:100%;appearance:none;background:var(--soft) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%23888'/%3E%3C/svg%3E") no-repeat right 12px center;border:1px solid var(--line);border-radius:9px;color:var(--ink);font:500 14px var(--sans);padding:9px 30px 9px 10px;cursor:pointer}
+select:focus{outline:none;border-color:var(--accent)}
+.grid{display:grid;grid-template-columns:360px 1fr;gap:20px;align-items:start}
+@media (max-width:900px){.grid{grid-template-columns:1fr}}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:18px}
+.group+.group{margin-top:18px;padding-top:16px;border-top:1px solid var(--line)}
+.gt{font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);font-weight:600;margin-bottom:10px}
+.fields{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.f{display:flex;flex-direction:column;gap:4px;min-width:0}
+.f.full{grid-column:1/-1}
+.f label{font-size:12px;color:var(--muted);display:flex;justify-content:space-between;gap:6px}
+.f label em{font-style:normal;opacity:.75}
+.in{display:flex;align-items:center;background:var(--soft);border:1px solid var(--line);border-radius:9px;padding:0 10px}
+.in:focus-within{border-color:var(--accent)}
+.in input{flex:1;min-width:0;border:0;background:transparent;color:var(--ink);font:500 15px var(--mono);padding:8px 0;outline:none}
+.in span{font:12px var(--mono);color:var(--muted)}
+.tog{display:flex;align-items:center;gap:8px;font-size:13px;cursor:pointer}
+.tog input{accent-color:var(--accent);width:16px;height:16px}
+.roas{display:flex;align-items:baseline;justify-content:space-between}
+.roas b{font:600 28px var(--mono);color:var(--accent)}
+input[type=range]{width:100%;accent-color:var(--accent)}
+.hint{font-size:11.5px;color:var(--muted);margin-top:6px}
+.fxline{display:flex;flex-wrap:wrap;align-items:center;gap:6px;margin-top:8px;font-size:11.5px;color:var(--muted)}
+.fxdot{width:7px;height:7px;border-radius:50%;background:var(--muted)}
+.fxdot.live{background:var(--good)} .fxdot.man{background:var(--warn)}
+.fxline button{font:inherit;font-size:11.5px;color:var(--accent);background:none;border:1px solid var(--accent);border-radius:6px;padding:1px 7px;cursor:pointer}
+.right{display:flex;flex-direction:column;gap:20px;min-width:0}
+.hero{display:flex;flex-wrap:wrap;justify-content:space-between;gap:12px}
+.big{font:600 44px var(--mono);letter-spacing:-.02em;line-height:1.1}
+.pill{display:inline-block;font-size:12px;font-weight:600;padding:4px 10px;border-radius:99px}
+.pill.ok{background:var(--good-soft);color:var(--good)} .pill.no{background:var(--bad-soft);color:var(--bad)}
+.kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-top:16px}
+@media (max-width:640px){.kpis{grid-template-columns:1fr 1fr}}
+.k{background:var(--soft);border-radius:10px;padding:12px}
+.k .l{font-size:12px;color:var(--muted)}
+.k .v{font:600 20px var(--mono);margin:2px 0}
+.k .s{font-size:11.5px;color:var(--muted)}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+@media (max-width:1100px){.two{grid-template-columns:1fr}}
+.row{display:grid;grid-template-columns:1fr auto;gap:2px 10px;margin-bottom:10px}
+.row .n{display:flex;align-items:center;gap:7px;font-size:13px}
+.dot{width:8px;height:8px;border-radius:2px;flex:none}
+.row .a{font:500 13px var(--mono);text-align:right;font-variant-numeric:tabular-nums}
+.row .a small{color:var(--muted);font-weight:400}
+.bar{grid-column:1/-1;height:6px;background:var(--soft);border-radius:4px;overflow:hidden}
+.bar i{display:block;height:100%;border-radius:4px}
+.tot{display:flex;justify-content:space-between;font-weight:600;padding-top:10px;border-top:1px solid var(--line);margin-top:6px;font-variant-numeric:tabular-nums}
+.tot span:last-child{font-family:var(--mono)}
+.tw{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-variant-numeric:tabular-nums}
+th{font-size:11.5px;color:var(--muted);font-weight:500;text-align:right;padding:6px 8px;border-bottom:1px solid var(--line)}
+th:first-child,td:first-child{text-align:left}
+td{font:13px var(--mono);text-align:right;padding:7px 8px;border-bottom:1px solid var(--line)}
+tr.be td{background:var(--soft)}
+tr.cur td{background:var(--accent-soft);font-weight:600}
+.tag{font:600 10px var(--sans);padding:1px 6px;border-radius:4px;margin-left:6px;vertical-align:1px}
+.tag.b{background:var(--line);color:var(--muted)} .tag.c{background:var(--accent);color:#fff}
+.neg{color:var(--bad)} .pos{color:var(--good)}
+.note{font-size:12.5px;color:var(--muted);line-height:1.65}
+.note p{margin:0 0 6px} .note b{color:var(--ink);font-weight:500}
+.tabs{display:flex;gap:4px;background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:4px;margin-bottom:20px;width:fit-content;max-width:100%;overflow-x:auto}
+.tabs button{font:500 14px var(--sans);color:var(--muted);background:none;border:0;border-radius:9px;padding:8px 16px;cursor:pointer;white-space:nowrap}
+.tabs button[aria-selected="true"]{background:var(--accent);color:#fff}
+.tabs button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+details.adv{margin-top:16px;padding-top:14px;border-top:1px solid var(--line)}
+details.adv summary{cursor:pointer;color:var(--accent);font-size:13px;font-weight:500;margin-bottom:10px}
+.cmp{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+@media (max-width:1100px){.cmp{grid-template-columns:1fr}}
+.mode{border-top:3px solid var(--mc)}
+.chip{display:inline-block;font-size:12px;font-weight:600;padding:3px 10px;border-radius:99px;background:var(--soft);color:var(--mc)}
+.qty{font:600 34px var(--mono);margin:4px 0 2px}
+.qty small{font:500 14px var(--sans);color:var(--muted);margin-left:4px}
+.mk{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:14px 0}
+.lines{font-variant-numeric:tabular-nums}
+.ln{display:flex;justify-content:space-between;gap:10px;padding:6px 0;border-bottom:1px dashed var(--line);font-size:13px}
+.ln span:last-child{font-family:var(--mono)}
+.ln.head{font-weight:600;border-bottom:1px solid var(--line)}
+.ln.res{font-weight:600;border:0;padding-top:10px}
+.cap{margin-top:12px;background:var(--soft);border-radius:10px;padding:10px 12px;display:flex;justify-content:space-between;align-items:baseline;gap:10px;flex-wrap:wrap}
+.cap b{font:600 18px var(--mono)}
+.cap small{display:block;color:var(--muted);font-size:11.5px}
+.verdict{font-size:13.5px;line-height:1.6}
+.verdict b{font-weight:600}
+.rp{display:flex;flex-wrap:wrap;gap:16px;align-items:flex-end;justify-content:space-between}
+.rp .f{width:150px}
+.rp .res .big{font-size:34px}
+.rp button,.usebtn{font:500 13px var(--sans);color:#fff;background:var(--accent);border:0;border-radius:8px;padding:7px 12px;cursor:pointer}
+.usebtn{background:none;color:var(--accent);border:1px solid var(--accent);padding:2px 8px;font-size:11.5px}
+td.na{color:var(--muted)}
+.ptitle{font-size:12px;color:var(--muted);font-weight:600;letter-spacing:.04em;margin-bottom:12px}
+</style>
+</head><body>
+<div class="wrap">
+<header>
+  <h1>跨境利润工作台</h1>
+  <p class="sub">选好市场和平台，自动带出税费默认值；汇率每日实时更新，所有参数都可以手动改</p>
+</header>
+
+<section class="market" aria-label="市场与平台">
+  <div class="f"><label for="country">市场</label><select id="country"></select></div>
+  <div class="f"><label for="platform">平台</label><select id="platform"></select></div>
+  <div class="f" id="curWrap"><label for="cur">币种</label><select id="cur"></select></div>
+</section>
+
+<nav class="tabs" role="tablist" aria-label="工具">
+  <button type="button" role="tab" id="tb-ads" aria-selected="true" data-tab="ads">广告投流核算</button>
+  <button type="button" role="tab" id="tb-price" aria-selected="false" data-tab="price">新品定价</button>
+  <button type="button" role="tab" id="tb-stock" aria-selected="false" data-tab="stock">备货与物流（海运 vs 空运）</button>
+</nav>
+
+<div id="tab-ads">
+<div class="grid">
+<section class="panel" aria-label="输入参数">
+  <div class="group">
+    <div class="gt">价格与汇率</div>
+    <div class="fields">
+      <div class="f"><label for="price">售价 <em id="priceNote">含税</em></label><div class="in"><input id="price" type="number" step="0.01"><span class="cu">—</span></div></div>
+      <div class="f"><label for="fx">汇率 <em>1 CNY =</em></label><div class="in"><input id="fx" type="number" step="0.0001"><span class="cu">—</span></div></div>
+    </div>
+    <div class="fxline"><span class="fxdot" id="fxDot"></span><span id="fxStatus">正在获取实时汇率…</span><button type="button" id="fxReset" hidden>恢复实时汇率</button></div>
+  </div>
+
+  <div class="group">
+    <div class="gt">商品与物流</div>
+    <div class="fields">
+      <div class="f"><label for="cost">产品成本 <em>采购/件</em></label><div class="in"><input id="cost" type="number" value="25" step="0.5"><span>CNY</span></div></div>
+      <div class="f"><label for="leg">头程 <em>分摊/件</em></label><div class="in"><input id="leg" type="number" value="18" step="0.5"><span>CNY</span></div></div>
+      <div class="f"><label for="tariff">关税+清关 <em>按货值</em></label><div class="in"><input id="tariff" type="number" value="0" step="1"><span>%</span></div></div>
+      <div class="f"><label for="last">尾程/仓配费 <em>/单</em></label><div class="in"><input id="last" type="number" value="0" step="0.1"><span class="cu">—</span></div></div>
+      <div class="f full"><label for="ret">退货/拒收损耗 <em>占售价</em></label><div class="in"><input id="ret" type="number" value="3" step="0.5"><span>%</span></div></div>
+    </div>
+    <p class="hint" id="lastHint">关税请按商品 HS 编码填写。</p>
+  </div>
+
+  <div class="group">
+    <div class="gt">平台与税费</div>
+    <div class="fields">
+      <div class="f"><label for="comm">平台佣金</label><div class="in"><input id="comm" type="number" step="0.5"><span>%</span></div></div>
+      <div class="f"><label for="minfee">最低佣金 <em>/单</em></label><div class="in"><input id="minfee" type="number" step="0.01"><span class="cu">—</span></div></div>
+      <div class="f"><label for="extra">额外服务费 <em>如 SFP</em></label><div class="in"><input id="extra" type="number" value="0" step="0.5"><span>%</span></div></div>
+      <div class="f"><label for="fixed">额外固定费 <em>/单</em></label><div class="in"><input id="fixed" type="number" value="0" step="0.01"><span class="cu">—</span></div></div>
+      <div class="f"><label for="aff">达人佣金 <em>联盟带货</em></label><div class="in"><input id="aff" type="number" step="1"><span>%</span></div></div>
+      <div class="f"><label for="bonus">提成 <em>/单</em></label><div class="in"><input id="bonus" type="number" value="0" step="0.01"><span class="cu">—</span></div></div>
+      <div class="f"><label for="vat">增值税率 <em>售价含税时</em></label><div class="in"><input id="vat" type="number" step="0.5"><span>%</span></div></div>
+      <div class="f"><label for="wht">所得税代扣</label><div class="in"><input id="wht" type="number" step="0.1"><span>%</span></div></div>
+    </div>
+    <p class="hint" id="tierHint" hidden></p>
+    <div style="display:flex;flex-direction:column;gap:6px;margin-top:10px">
+      <label class="tog"><input id="whtOn" type="checkbox"> 把所得税代扣计为成本（保守口径）</label>
+    </div>
+  </div>
+
+  <div class="group">
+    <div class="gt">广告与规模</div>
+    <div class="roas"><label for="roas" style="font-size:13px">广告 ROAS <em style="font-style:normal;color:var(--muted);font-size:12px">按售价 GMV</em></label><b id="roasV">3.50×</b></div>
+    <input id="roas" type="range" min="1" max="8" step="0.05" value="3.5">
+    <div class="fields" style="margin-top:10px">
+      <div class="f full"><label for="daily">日订单量</label><div class="in"><input id="daily" type="number" value="50" step="1"><span>单</span></div></div>
+    </div>
+  </div>
+</section>
+
+<div class="right">
+  <section class="panel">
+    <div class="hero">
+      <div>
+        <div class="ptitle">单均净利润</div>
+        <div class="big" id="profit">—</div>
+        <div class="sub" id="profitSub">—</div>
+      </div>
+      <div style="text-align:right">
+        <span class="pill" id="status">—</span>
+        <div class="sub" id="gap" style="margin-top:6px">—</div>
+      </div>
+    </div>
+    <div class="kpis">
+      <div class="k"><div class="l">净利率</div><div class="v" id="kMargin">—</div><div class="s">净利 ÷ 售价</div></div>
+      <div class="k"><div class="l">保本 ROAS</div><div class="v" id="kBe">—</div><div class="s" id="kBeS">—</div></div>
+      <div class="k"><div class="l">单均广告费</div><div class="v" id="kAd">—</div><div class="s" id="kAdS">—</div></div>
+      <div class="k"><div class="l">日净利 / 月净利</div><div class="v" id="kDay">—</div><div class="s" id="kMonth">—</div></div>
+    </div>
+  </section>
+
+  <div class="two">
+    <section class="panel">
+      <div class="ptitle" id="barTitle">单均成本拆解</div>
+      <div id="bars"></div>
+      <div class="tot"><span>总成本</span><span id="tCost">—</span></div>
+      <div class="tot" style="border:0;margin:0"><span>单均净利</span><span id="tProfit">—</span></div>
+    </section>
+    <section class="panel">
+      <div class="ptitle">ROAS 敏感度</div>
+      <div class="tw"><table>
+        <thead><tr><th>ROAS</th><th>广告费</th><th>单均净利</th><th>净利率</th></tr></thead>
+        <tbody id="sens"></tbody>
+      </table></div>
+    </section>
+  </div>
+
+  <section class="panel" aria-label="反推定价">
+    <div class="ptitle">反推定价 · 要达到目标利润，售价至少定多少</div>
+    <div class="rp">
+      <div class="f"><label for="tMargin">目标净利率</label><div class="in"><input id="tMargin" type="number" value="20" step="1"><span>%</span></div></div>
+      <div class="res" style="flex:1;min-width:220px">
+        <div class="sub" id="rpLabel">—</div>
+        <div class="big" id="rpPrice">—</div>
+        <div class="sub" id="rpSub">—</div>
+      </div>
+      <button type="button" id="rpUse">用这个售价计算</button>
+    </div>
+    <div class="tw" style="margin-top:14px"><table>
+      <thead id="rpHead"></thead><tbody id="rpBody"></tbody>
+    </table></div>
+    <p class="hint">按当前的成本、平台费率和税率反推；平台固定费、最低佣金这类随售价变化的规则也已计入。表格里的价格是达到对应净利率所需的最低售价。</p>
+  </section>
+
+  <section class="panel" aria-label="大促折扣">
+    <div class="ptitle">大促折扣 · 打折后还剩多少利润</div>
+    <div class="fields" style="grid-template-columns:repeat(auto-fit,minmax(150px,1fr));max-width:520px">
+      <div class="f"><label for="pDisc">折扣力度 <em>卖家承担</em></label><div class="in"><input id="pDisc" type="number" value="20" step="1"><span>% off</span></div></div>
+      <div class="f"><label for="pRoas">大促期 ROAS</label><div class="in"><input id="pRoas" type="number" value="4" step="0.1"><span>×</span></div></div>
+    </div>
+    <div class="tw" style="margin-top:14px"><table>
+      <thead><tr><th></th><th>日常</th><th>大促</th><th>变化</th></tr></thead>
+      <tbody id="promoBody"></tbody>
+    </table></div>
+    <p class="verdict" id="promoVerdict" style="margin:12px 0 0">—</p>
+    <p class="hint">折扣按售价计算，佣金、达人佣金、退货损耗等按折后价重新计算。平台出资的补贴不减少你的收入，不用填进折扣。</p>
+  </section>
+
+  <section class="panel note">
+    <div class="ptitle" style="margin-bottom:6px" id="noteTitle">口径说明</div>
+    <div id="notes"></div>
+    <p style="margin-top:8px">费率为 2026 年公开资料整理的默认值，不同类目差异较大，请以卖家后台和实际结算为准。</p>
+  </section>
+</div>
+</div>
+</div>
+</div>
+
+<div id="tab-price" hidden>
+<div class="grid">
+<section class="panel" aria-label="新品定价参数">
+  <div class="group">
+    <div class="gt">商品成本</div>
+    <div class="fields">
+      <div class="f"><label for="nCost">进货成本 <em>/件</em></label><div class="in"><input id="nCost" type="number" value="25" step="0.5"><span>CNY</span></div></div>
+      <div class="f"><label for="nLeg">头程 <em>分摊/件</em></label><div class="in"><input id="nLeg" type="number" value="18" step="0.5"><span>CNY</span></div></div>
+      <div class="f"><label for="nTariff">关税+清关</label><div class="in"><input id="nTariff" type="number" value="0" step="1"><span>%</span></div></div>
+      <div class="f"><label for="nLast">尾程/仓配 <em>/单</em></label><div class="in"><input id="nLast" type="number" value="0" step="0.1"><span class="cu">—</span></div></div>
+      <div class="f"><label for="nPack">包材+其他 <em>/件</em></label><div class="in"><input id="nPack" type="number" value="3" step="0.5"><span>CNY</span></div></div>
+      <div class="f"><label for="nRet">退货损耗</label><div class="in"><input id="nRet" type="number" value="3" step="0.5"><span>%</span></div></div>
+    </div>
+  </div>
+  <div class="group">
+    <div class="gt">定价目标</div>
+    <div class="fields">
+      <div class="f"><label for="nMargin">目标净利率 <em>稳定期</em></label><div class="in"><input id="nMargin" type="number" value="20" step="1"><span>%</span></div></div>
+      <div class="f"><label for="nComp">竞品售价 <em>选填</em></label><div class="in"><input id="nComp" type="number" step="0.01" placeholder="—"><span class="cu">—</span></div></div>
+      <div class="f"><label for="nRoasNew">新品期 ROAS</label><div class="in"><input id="nRoasNew" type="number" value="2" step="0.1"><span>×</span></div></div>
+      <div class="f"><label for="nRoas">稳定期 ROAS</label><div class="in"><input id="nRoas" type="number" value="3.5" step="0.1"><span>×</span></div></div>
+      <div class="f full"><label for="nEnd">尾数定价</label><select id="nEnd"><option value="9">以 9 结尾（如 399、29.99）</option><option value="0">整数</option><option value="none">不取整</option></select></div>
+    </div>
+  </div>
+  <p class="hint" id="nPlat">—</p>
+</section>
+
+<div class="right">
+  <section class="panel">
+    <div class="hero">
+      <div>
+        <div class="ptitle">建议售价</div>
+        <div class="big" id="nPrice" style="color:var(--accent)">—</div>
+        <div class="sub" id="nPriceSub">—</div>
+      </div>
+      <div style="text-align:right"><span class="pill" id="nComp2" hidden></span></div>
+    </div>
+    <div class="kpis">
+      <div class="k"><div class="l">最低保本价</div><div class="v" id="nBe">—</div><div class="s" id="nBeS">—</div></div>
+      <div class="k"><div class="l">稳定期单均净利</div><div class="v" id="nProfit">—</div><div class="s" id="nProfitS">—</div></div>
+      <div class="k"><div class="l">新品期单均净利</div><div class="v" id="nNew">—</div><div class="s" id="nNewS">—</div></div>
+      <div class="k"><div class="l">保本 ROAS</div><div class="v" id="nBeRoas">—</div><div class="s">按建议售价</div></div>
+    </div>
+    <p class="verdict" id="nVerdict" style="margin:14px 0 0">—</p>
+  </section>
+  <section class="panel">
+    <div class="ptitle">价格梯度 · 不同净利率和 ROAS 下的最低售价</div>
+    <div class="tw"><table><thead id="nHead"></thead><tbody id="nBody"></tbody></table></div>
+  </section>
+  <section class="panel note">
+    <div class="ptitle" style="margin-bottom:6px">口径说明</div>
+    <p>平台佣金、达人佣金、增值税、代扣税沿用顶部所选平台的默认值，在“广告投流核算”页修改后这里同步生效。</p>
+    <p>建议售价按稳定期 ROAS 和目标净利率反推，再按尾数规则向上取整。新品期 ROAS 通常更低，这里用来估算起量阶段每单的亏损，也就是新品的“学费”。</p>
+  </section>
+</div>
+</div>
+</div>
+
+<div id="tab-stock" hidden>
+<div class="grid">
+<section class="panel" aria-label="备货参数">
+  <div class="group">
+    <div class="gt">基础输入</div>
+    <div class="fields">
+      <div class="f"><label for="sCost">产品进货成本 <em>/件</em></label><div class="in"><input id="sCost" type="number" value="25" step="0.5"><span>CNY</span></div></div>
+      <div class="f"><label for="sPrice">售价 <em id="sPriceNote">含税</em></label><div class="in"><input id="sPrice" type="number" step="0.01"><span class="cu">—</span></div></div>
+      <div class="f"><label for="sDaily">日动销量 <em>件/天</em></label><div class="in"><input id="sDaily" type="number" value="10" step="1"><span>件</span></div></div>
+      <div class="f"><label for="sWeight">单件计费重</label><div class="in"><input id="sWeight" type="number" value="0.5" step="0.05"><span>kg</span></div></div>
+      <div class="f"><label for="sMult">备货倍数 <em>几备</em></label><div class="in"><input id="sMult" type="number" value="3" step="0.5"><span>×</span></div></div>
+      <div class="f"><label for="sLast">尾程派送 <em>/件</em></label><div class="in"><input id="sLast" type="number" value="0" step="0.1"><span class="cu">—</span></div></div>
+    </div>
+    <p class="hint">下次备货数量 = 日动销 × 运输时效天数 × 备货倍数。</p>
+  </div>
+  <details class="adv">
+    <summary>高级参数（示例值，请换成你的货代报价）</summary>
+    <div class="fields">
+      <div class="f"><label for="seaRate">海运单价</label><div class="in"><input id="seaRate" type="number" value="7.2" step="0.1"><span>¥/kg</span></div></div>
+      <div class="f"><label for="seaDays">海运时效</label><div class="in"><input id="seaDays" type="number" value="24" step="1"><span>天</span></div></div>
+      <div class="f"><label for="airRate">空运单价</label><div class="in"><input id="airRate" type="number" value="58.8" step="0.1"><span>¥/kg</span></div></div>
+      <div class="f"><label for="airDays">空运时效</label><div class="in"><input id="airDays" type="number" value="11" step="1"><span>天</span></div></div>
+      <div class="f"><label for="sWh">海外仓上架+操作</label><div class="in"><input id="sWh" type="number" value="6.3" step="0.1"><span>¥/件</span></div></div>
+      <div class="f"><label for="sPack">包材</label><div class="in"><input id="sPack" type="number" value="5" step="0.1"><span>¥/件</span></div></div>
+      <div class="f"><label for="sAcos">广告费 <em>ACOS</em></label><div class="in"><input id="sAcos" type="number" value="30" step="1"><span>%</span></div></div>
+      <div class="f"><label for="sComm">平台佣金</label><div class="in"><input id="sComm" type="number" step="0.5"><span>%</span></div></div>
+      <div class="f"><label for="sAff">达人佣金</label><div class="in"><input id="sAff" type="number" step="1"><span>%</span></div></div>
+      <div class="f"><label for="sFxLoss">汇损 <em>回款换汇</em></label><div class="in"><input id="sFxLoss" type="number" value="1.5" step="0.1"><span>%</span></div></div>
+      <div class="f"><label for="sRet">退货+客诉摊销</label><div class="in"><input id="sRet" type="number" value="3" step="0.5"><span>%</span></div></div>
+      <div class="f"><label for="sTariff">关税+清关 <em>按货值</em></label><div class="in"><input id="sTariff" type="number" value="0" step="1"><span>%</span></div></div>
+      <div class="f"><label for="sVat">增值税率</label><div class="in"><input id="sVat" type="number" step="0.5"><span>%</span></div></div>
+      <div class="f"><label for="sWht">所得税代扣 <em>计入成本</em></label><div class="in"><input id="sWht" type="number" step="0.1"><span>%</span></div></div>
+    </div>
+  </details>
+</section>
+
+<div class="right">
+  <section class="panel verdict" id="verdict">—</section>
+  <div class="cmp">
+    <section class="panel mode" id="mSea" style="--mc:var(--c3)"></section>
+    <section class="panel mode" id="mAir" style="--mc:var(--c4)"></section>
+  </div>
+  <section class="panel note">
+    <div class="ptitle" style="margin-bottom:6px">口径说明</div>
+    <p>金额统一折算成人民币，方便看备货资金。售价按顶部汇率换算，尾程按当地币种填写后自动换算。</p>
+    <p>备货资金投入 = (进货 + 头程 + 包材) × 下次备货数量，也就是压在库存里的资金。</p>
+    <p>海运、空运单价和时效是示例值，墨西哥线路请换成你货代的实际报价（含清关、派送到仓）。</p>
+  </section>
+</div>
+</div>
+</div>
+
+</div>
+
+<script>
+/* ---------- 市场与平台预设（修改默认值只需改这里） ---------- */
+const MARKETS={
+  MX:{name:"墨西哥",cur:"MXN",vat:16,wht:2.5,price:399,
+    notes:[
+      "<b>IVA 16%：</b>墨西哥售价含 IVA，按售价 ÷ 1.16 计算实收。有 RFC 时平台另代扣 8% IVA，可抵减应缴 IVA，只影响现金流，不计入成本。",
+      "<b>ISR 2.5%：</b>2026 年起平台对有 RFC 的卖家代扣 2.5% ISR（基数为不含税收入），属预缴所得税，可在年度汇算抵扣。无 RFC 时代扣 20% ISR + 16% IVA。"
+    ],
+    platforms:{
+      tiktok:{name:"TikTok Shop",comm:6,minfee:0,aff:10,
+        note:"<b>TikTok Shop：</b>基础佣金 6%，新卖家前 60 天可能 0%；参加 SFP 等项目另收费，填在“额外服务费”。"},
+      ml_c:{name:"美客多 Mercado Libre · 经典",comm:15,minfee:0,aff:0,
+        tier:p=>p<99?25:p<149?30:p<299?37:0,
+        tierText:"经典刊登售价低于 299 MXN 另收固定费：<99 收 25，99–149 收 30，149–299 收 37 MXN/件（已自动计入）。",
+        note:"<b>美客多（Mercado Libre）：</b>经典刊登佣金约 10–16%（家居、运动、服装约 15%），无分期免息。尾程如用 Full 仓，把配送费填进“尾程/仓配费”。"},
+      ml_p:{name:"美客多 Mercado Libre · 高级",comm:19.5,minfee:0,aff:0,
+        note:"<b>美客多（Mercado Libre）：</b>高级刊登佣金约为经典加 4.5 个点（12.5–20.5%），不收低价固定费，买家可用最长 18 期免息分期。"},
+      amz:{name:"Amazon MX",comm:15,minfee:8,aff:0,
+        note:"<b>Amazon MX：</b>大部分类目佣金 15%（电子 10%，玩具、美妆低价段 8–12%），每件最低 8 MXN；佣金按含运费的总售价计算。FBA 配送费填进“尾程/仓配费”。月租 75 或 600 MXN 未计入单均成本。"},
+      shop:{name:"独立站（Shopify 等）",comm:4.2,minfee:0,fixed:3.5,aff:0,wht:0,
+        note:"<b>独立站：</b>佣金一栏填支付手续费，默认按 Stripe 墨西哥 3.6% + 3 MXN 再加 IVA 折算（约 4.2% + 3.5 MXN/单）；用 Mercado Pago、OXXO 或货到付款请改成实际费率。不经过平台，所以没有平台代扣 ISR/IVA，所得税按正常申报。建站月费未计入单均成本；独立站通常没有平台补贴运费，尾程请按实际填写。"}
+    }},
+  US:{name:"美国",cur:"USD",vat:0,wht:0,price:25,
+    notes:["<b>销售税：</b>美国标价不含税，销售税由平台代收代缴，不影响卖家利润，所以增值税率为 0。"],
+    platforms:{
+      tiktok:{name:"TikTok Shop",comm:8,minfee:0,aff:10,
+        note:"<b>TikTok Shop US：</b>2026 年 8 月 4 日起大部分类目佣金从 6% 调到 8%，部分美妆、电子子类目 9.5–11%，食品约 5%。"},
+      amz:{name:"Amazon US",comm:15,minfee:0.30,aff:0,
+        note:"<b>Amazon US：</b>大部分类目佣金 15%，每件最低 0.30 USD。FBA 配送费填进“尾程/仓配费”，月租 39.99 USD 未计入单均成本。"},
+      shop:{name:"独立站（Shopify 等）",comm:2.9,minfee:0,fixed:0.30,aff:0,wht:0,
+        note:"<b>独立站：</b>佣金一栏填支付手续费，默认按 Shopify Payments 基础版 2.9% + 0.30 USD/单；用第三方支付网关时 Shopify 还会另收交易费。建站月费未计入单均成本，尾程请按实际填写。"}
+    }},
+  CUSTOM:{name:"自定义市场",cur:"EUR",vat:0,wht:0,price:30,custom:true,
+    notes:["<b>自定义：</b>先选币种，汇率会自动换成人民币对该币种的实时汇率。增值税、佣金等按当地规则手动填写。"],
+    platforms:{custom:{name:"自定义平台",comm:10,minfee:0,aff:0,note:""}}}
+};
+
+const SHOP=(comm,fixed,unit,gw)=>({name:"独立站（Shopify 等）",comm,minfee:0,fixed,aff:0,wht:0,
+  note:`<b>独立站：</b>佣金一栏填支付手续费，默认约 ${comm}% + ${fixed} ${unit}/单（${gw||"Shopify Payments 基础版"}）。建站月费未计入单均成本，尾程按实际填写。`});
+const REF="默认费率为综合参考值（佣金 + 交易/服务费），不同类目和店铺类型差异较大，请以卖家后台为准。";
+Object.assign(MARKETS,{
+  CA:{name:"加拿大",region:"美洲",cur:"CAD",vat:0,wht:0,price:35,
+    notes:["<b>GST/HST：</b>加拿大标价不含税，平台代收代缴销售税，所以增值税率为 0。"],
+    platforms:{amz:{name:"Amazon CA",comm:15,minfee:0.30,aff:0,note:"<b>Amazon CA：</b>大部分类目佣金 15%。FBA 配送费填进“尾程/仓配费”。"},shop:SHOP(2.9,0.30,"CAD")}},
+  BR:{name:"巴西",region:"美洲",cur:"BRL",vat:0,wht:0,price:129,
+    notes:["<b>巴西税费：</b>巴西税制复杂（ICMS、PIS/COFINS 等），按主体差异很大。简单起见增值税率默认为 0，请把你的综合税负（例如 Simples Nacional 税率）填进“所得税代扣”并勾选计入成本。"],
+    platforms:{
+      ml_c:{name:"美客多 Mercado Livre · 经典",comm:13,minfee:0,aff:0,tier:p=>p<79?6.5:0,tierText:"售价低于 79 BRL 的商品另收约 6.5 BRL/件固定费（已自动计入，参考值）。",note:"<b>美客多巴西：</b>经典刊登佣金约 11–14%，高级约 16–19%。"+REF},
+      ml_p:{name:"美客多 Mercado Livre · 高级",comm:18,minfee:0,aff:0,tier:p=>p<79?6.5:0,tierText:"售价低于 79 BRL 的商品另收约 6.5 BRL/件固定费（已自动计入，参考值）。",note:"<b>美客多巴西：</b>高级刊登佣金约 16–19%，买家可分期免息。"+REF},
+      shopee:{name:"Shopee",comm:20,minfee:0,fixed:4,aff:0,note:"<b>Shopee 巴西：</b>佣金 + 包邮计划约 20%，另有每件约 4 BRL 固定费。"+REF},
+      tiktok:{name:"TikTok Shop",comm:6,minfee:0,aff:10,note:"<b>TikTok Shop 巴西：</b>"+REF},
+      amz:{name:"Amazon BR",comm:13,minfee:0,aff:0,note:"<b>Amazon BR：</b>大部分类目佣金约 10–15%。"+REF},
+      shop:SHOP(3.99,0.39,"BRL","Mercado Pago / Pagar.me 等网关")}},
+  CL:{name:"智利",region:"美洲",cur:"CLP",vat:19,wht:0,price:19990,
+    notes:["<b>IVA 19%：</b>智利售价含 IVA，按售价 ÷ 1.19 计算实收。"],
+    platforms:{
+      ml_c:{name:"美客多 · 经典",comm:13,minfee:0,aff:0,note:"<b>美客多智利：</b>经典刊登佣金约 11–15%，低价商品另有固定费，请填进“额外固定费”。"+REF},
+      ml_p:{name:"美客多 · 高级",comm:17,minfee:0,aff:0,note:"<b>美客多智利：</b>高级刊登佣金约 15–19%。"+REF},
+      shop:SHOP(3.5,0,"CLP","Webpay / Mercado Pago 等网关")}},
+  CO:{name:"哥伦比亚",region:"美洲",cur:"COP",vat:19,wht:0,price:99900,
+    notes:["<b>IVA 19%：</b>哥伦比亚售价含 IVA，按售价 ÷ 1.19 计算实收。平台可能另有代扣（retención），按你的主体情况填进“所得税代扣”。"],
+    platforms:{
+      ml_c:{name:"美客多 · 经典",comm:13,minfee:0,aff:0,note:"<b>美客多哥伦比亚：</b>经典刊登佣金约 11–15%，低价商品另有固定费，请填进“额外固定费”。"+REF},
+      ml_p:{name:"美客多 · 高级",comm:17,minfee:0,aff:0,note:"<b>美客多哥伦比亚：</b>高级刊登佣金约 15–19%。"+REF},
+      shop:SHOP(3.5,900,"COP","Wompi / Mercado Pago 等网关")}},
+  UK:{name:"英国",region:"欧洲",cur:"GBP",vat:20,wht:0,price:20,
+    notes:["<b>VAT 20%：</b>英国售价含 VAT，按售价 ÷ 1.2 计算实收。海外卖家在平台上的 VAT 一般由平台代扣代缴，结果和这里的口径一致。"],
+    platforms:{amz:{name:"Amazon UK",comm:15,minfee:0,aff:0,note:"<b>Amazon UK：</b>大部分类目佣金 15%。FBA 配送费填进“尾程/仓配费”。"},
+      tiktok:{name:"TikTok Shop",comm:9,minfee:0,aff:10,note:"<b>TikTok Shop UK：</b>佣金约 9%。"+REF},
+      shop:SHOP(2,0.25,"GBP")}}
+});
+const EU=(code,name,vat,price)=>({name,region:"欧洲",cur:"EUR",vat,wht:0,price,
+  notes:[`<b>增值税 ${vat}%：</b>${name}售价含增值税，按售价 ÷ ${1+vat/100} 计算实收。海外卖家在平台上的增值税一般由平台代扣代缴。`],
+  platforms:{amz:{name:"Amazon "+code,comm:15,minfee:0,aff:0,note:`<b>Amazon ${code}：</b>大部分类目佣金 15%。FBA 配送费填进“尾程/仓配费”。`},
+    tiktok:{name:"TikTok Shop",comm:9,minfee:0,aff:10,note:"<b>TikTok Shop 欧洲：</b>2026 年 1 月起佣金上调到约 9%。"+REF},
+    shop:SHOP(2.1,0.25,"EUR")}});
+Object.assign(MARKETS,{DE:EU("DE","德国",19,25),FR:EU("FR","法国",20,25),ES:EU("ES","西班牙",21,25),IT:EU("IT","意大利",22,25)});
+Object.assign(MARKETS,{
+  JP:{name:"日本",region:"亚太",cur:"JPY",vat:10,wht:0,price:2980,
+    notes:["<b>消费税 10%：</b>日本标价含消费税，按售价 ÷ 1.1 计算实收。"],
+    platforms:{amz:{name:"Amazon JP",comm:10,minfee:30,aff:0,note:"<b>Amazon JP：</b>大部分类目佣金约 8–15%，每件最低约 30 JPY。"+REF},shop:SHOP(3.6,0,"JPY")}},
+  AU:{name:"澳大利亚",region:"亚太",cur:"AUD",vat:10,wht:0,price:39,
+    notes:["<b>GST 10%：</b>澳洲售价含 GST，按售价 ÷ 1.1 计算实收。"],
+    platforms:{amz:{name:"Amazon AU",comm:15,minfee:0,aff:0,note:"<b>Amazon AU：</b>大部分类目佣金约 8–15%。"+REF},shop:SHOP(1.75,0.30,"AUD")}},
+});
+const SEA=(name,cur,vat,price,sp,lz,tt,vatName,extra)=>({name,region:"东南亚",cur,vat,wht:0,price,
+  notes:[`<b>${vatName} ${vat}%：</b>按售价含税计算实收。跨境店（CNSC/LGS）和本土店的税务处理不同，跨境店通常不需要在这里扣税，可把增值税率改成 0。`+(extra||"")],
+  platforms:{shopee:{name:"Shopee",comm:sp,minfee:0,aff:0,note:"<b>Shopee：</b>"+REF},
+    lazada:{name:"Lazada",comm:lz,minfee:0,aff:0,note:"<b>Lazada：</b>"+REF},
+    tiktok:{name:"TikTok Shop",comm:tt,minfee:0,aff:10,note:"<b>TikTok Shop：</b>"+REF}}});
+Object.assign(MARKETS,{
+  ID:SEA("印尼","IDR",11,149000,18,15,15,"PPN"),
+  TH:SEA("泰国","THB",7,399,19,20,14,"VAT"),
+  VN:SEA("越南","VND",10,299000,16,13,19,"VAT"," TikTok Shop 越南 2026 年 3 月起佣金上调。"),
+  MY:SEA("马来西亚","MYR",0,59,23,13,17,"SST"," 马来西亚一般商品不征 SST，默认为 0。"),
+  PH:SEA("菲律宾","PHP",12,599,18,12,14,"VAT"),
+  SG:SEA("新加坡","SGD",9,29,15,12,14,"GST"),
+  SA:{name:"沙特",region:"中东",cur:"SAR",vat:15,wht:0,price:99,
+    notes:["<b>VAT 15%：</b>沙特售价含 VAT，按售价 ÷ 1.15 计算实收。"],
+    platforms:{amz:{name:"Amazon SA",comm:15,minfee:0,aff:0,note:"<b>Amazon SA：</b>"+REF},noon:{name:"Noon",comm:15,minfee:0,aff:0,note:"<b>Noon：</b>"+REF},shop:SHOP(2.9,1,"SAR","本地支付网关")}},
+  AE:{name:"阿联酋",region:"中东",cur:"AED",vat:5,wht:0,price:99,
+    notes:["<b>VAT 5%：</b>阿联酋售价含 VAT，按售价 ÷ 1.05 计算实收。"],
+    platforms:{amz:{name:"Amazon AE",comm:15,minfee:0,aff:0,note:"<b>Amazon AE：</b>"+REF},noon:{name:"Noon",comm:15,minfee:0,aff:0,note:"<b>Noon：</b>"+REF},shop:SHOP(2.9,1,"AED","本地支付网关")}}
+});
+MARKETS.MX.region="美洲"; MARKETS.US.region="美洲";
+const CUSTOM_M=MARKETS.CUSTOM; delete MARKETS.CUSTOM; CUSTOM_M.region="其他"; MARKETS.CUSTOM=CUSTOM_M;
+const CURS=["USD","MXN","BRL","CAD","EUR","GBP","JPY","KRW","AUD","SGD","MYR","THB","IDR","PHP","VND","SAR","AED","CLP","COP","PEN","ARS","TRY","PLN"];
+const FALLBACK={"AED":0.545769,"ARS":226.476278,"AUD":0.211976,"BRL":0.769408,"CAD":0.209809,"CHF":0.123109,"CLP":143.112877,"CNY":1,"COP":484.045016,"CZK":3.196931,"DKK":0.975684,"EUR":0.130531,"GBP":0.112301,"HKD":1.165337,"HUF":47.619048,"IDR":2652.519894,"ILS":0.453767,"INR":14.265132,"JPY":23.416463,"KRW":203.086921,"MXN":2.602811,"MYR":0.606575,"NOK":1.412855,"NZD":0.263856,"PEN":0.505854,"PHP":9.345794,"PLN":0.570646,"RON":0.690942,"SAR":0.557287,"SEK":1.476287,"SGD":0.189662,"THB":4.963575,"TRY":7.251632,"TWD":4.739336,"USD":0.14861,"VND":3875.968992,"ZAR":2.423988,"UYU":5.96248}; /* 2026-09-27 汇率，仅在获取不到实时汇率时使用 */
+
+/* ---------- 工具 ---------- */
+const $=id=>document.getElementById(id);
+const n=id=>parseFloat($(id).value)||0;
+let market="MX", plat="tiktok", cur="MXN", rates=null, rateDate="", manual=false;
+const money=v=>{try{return new Intl.NumberFormat("en-US",{style:"currency",currency:cur,currencyDisplay:"symbol",maximumFractionDigits:2,minimumFractionDigits:cur==="JPY"||cur==="KRW"||cur==="IDR"||cur==="VND"?0:2}).format(v);}catch(e){return v.toFixed(2)+" "+cur;}};
+const pct=v=>(v*100).toFixed(1)+"%";
+
+/* ---------- 选择器 ---------- */
+function fillCountry(){
+  const groups={};Object.entries(MARKETS).forEach(([k,m])=>{(groups[m.region||"其他"]=groups[m.region||"其他"]||[]).push(`<option value="${k}">${m.name}（${m.cur}）</option>`);});
+  $("country").innerHTML=["美洲","欧洲","亚太","东南亚","中东","其他"].filter(g=>groups[g]).map(g=>`<optgroup label="${g}">${groups[g].join("")}</optgroup>`).join("");
+}
+function fillPlatform(){const p=MARKETS[market].platforms;$("platform").innerHTML=Object.entries(p).map(([k,v])=>`<option value="${k}">${v.name}</option>`).join("");plat=Object.keys(p)[0];$("platform").value=plat;}
+function fillCur(){$("cur").innerHTML=CURS.map(c=>`<option value="${c}">${c}</option>`).join("");$("cur").value=cur;}
+function applyMarket(){
+  const m=MARKETS[market]; cur=m.cur; $("cur").value=cur;
+  $("curWrap").hidden=!m.custom;
+  $("price").value=m.price; $("vat").value=m.vat; $("wht").value=m.wht;
+  $("whtOn").checked=m.wht>0;
+  manual=false; applyFx(); applyPlatform(); syncStock(); calcStock();
+}
+function applyPlatform(){
+  const p=MARKETS[market].platforms[plat];
+  $("comm").value=p.comm; $("minfee").value=p.minfee; $("aff").value=p.aff; $("fixed").value=p.fixed||0;
+  const w=p.wht!=null?p.wht:MARKETS[market].wht; $("wht").value=w; $("whtOn").checked=w>0;
+  if($("sComm")){$("sComm").value=p.comm;$("sAff").value=p.aff;$("sWht").value=w;}
+  labels(); calc();
+}
+function labels(){
+  document.querySelectorAll(".cu").forEach(e=>e.textContent=cur);
+  $("priceNote").textContent=n("vat")>0?"含税":"不含税";
+  const m=MARKETS[market], p=m.platforms[plat];
+  $("barTitle").textContent="单均成本拆解（"+cur+"）";
+  $("noteTitle").textContent="口径说明 · "+m.name+" "+p.name;
+  $("notes").innerHTML=[...m.notes,p.note].filter(Boolean).map(t=>`<p>${t}</p>`).join("");
+}
+
+/* ---------- 汇率 ---------- */
+function applyFx(){
+  if(manual) return;
+  const r=rates&&rates[cur]!=null?rates[cur]:FALLBACK[cur];
+  if(r!=null) $("fx").value=+r.toFixed(6);
+  fxUI();
+}
+function fxUI(){
+  const dot=$("fxDot"), st=$("fxStatus");
+  const live=rates&&rates[cur]!=null?rates[cur]:null;
+  if(live!=null&&!manual){dot.className="fxdot live";st.textContent="实时汇率 · 1 CNY = "+(+live.toFixed(4))+" "+cur+" · 更新于 "+rateDate;}
+  else if(live!=null&&manual){dot.className="fxdot man";st.textContent="手动汇率（实时 "+(+live.toFixed(4))+"）";}
+  else if(manual){dot.className="fxdot man";st.textContent="手动汇率";}
+  else{dot.className="fxdot";st.textContent=FALLBACK[cur]!=null?"暂时无法获取实时汇率，使用 2026-09-27 的汇率":"无法获取 "+cur+" 实时汇率，请手动填写";}
+  $("fxReset").hidden=!(live!=null&&manual);
+}
+async function loadRates(){
+  try{const c=JSON.parse(localStorage.getItem("fx_cny_all")||"null");if(c&&c.rates){rates=c.rates;rateDate=c.date+"（缓存）";applyFx();calc();}}catch(e){}
+  const save=()=>{try{localStorage.setItem("fx_cny_all",JSON.stringify({rates,date:rateDate}));}catch(e){}applyFx();calc();};
+  /* 1) 在 Claude 网站上：读取每日更新的汇率 */
+  let got=false;
+  try{
+    const db=await window.claude?.use?.("db");
+    if(db){
+      db.doc("fx/all").onSnapshot(s=>{
+        const d=s.exists?s.data():null;
+        if(d&&d.rates){rates=d.rates;rateDate=d.date||"";got=true;save();}
+      },()=>{});
+    }
+  }catch(e){}
+  /* 2) 自行托管时：直接请求汇率接口 */
+  try{
+    const j=await (await fetch("https://open.er-api.com/v6/latest/CNY")).json();
+    if(j&&j.rates&&j.rates.USD&&!got){rates=j.rates;rateDate=new Date(j.time_last_update_unix*1000).toLocaleDateString("zh-CN");save();}
+  }catch(e){}
+  applyFx(); calc();
+}
+
+/* ---------- 计算 ---------- */
+function base(P,o){
+  const v=k=>o&&o[k]!=null?o[k]:n(k);
+  const m=MARKETS[market], p=m.platforms[plat], fx=n("fx");
+  const vat=n("vat"), net=P/(1+vat/100);
+  const commAmt=Math.max(P*n("comm")/100, n("minfee"));
+  const tierFee=p.tier?p.tier(P):0;
+  const items=[
+    ["增值税 "+vat+"%", P-net],
+    ["产品成本", v("cost")*fx],
+    ["头程 + 关税", v("leg")*fx + v("cost")*fx*v("tariff")/100],
+    ["尾程 / 仓配", v("last")],
+    ["平台佣金 + 服务费", commAmt + P*n("extra")/100],
+    ["平台固定费", tierFee + n("fixed")],
+    ["达人佣金", P*n("aff")/100],
+    ["所得税代扣", $("whtOn").checked? net*n("wht")/100 : 0],
+    ["退货损耗 + 提成", P*v("ret")/100 + v("bonus")],
+  ];
+  return {net,items,total:items.reduce((s,i)=>s+i[1],0),tierFee};
+}
+function calc(){
+  if(typeof calcStock==="function"&&$("sPrice").value)calcStock();
+  const P=n("price"), fx=n("fx"), R=n("roas");
+  if(!P) return;
+  const b=base(P), ad=R>0?P/R:0, profit=P-b.total-ad, margin=profit/P;
+  const room=P-b.total, be=room>0?P/room:Infinity, ok=profit>=0;
+  const p=MARKETS[market].platforms[plat];
+  $("tierHint").hidden=!p.tier; if(p.tier) $("tierHint").textContent=p.tierText;
+  $("roasV").textContent=R.toFixed(2)+"×";
+  $("profit").textContent=money(profit); $("profit").style.color=ok?"var(--good)":"var(--bad)";
+  $("profitSub").textContent="≈ ¥"+(fx?profit/fx:0).toFixed(2)+" · 售价 "+money(P)+(n("vat")>0?"（不含税 "+money(b.net)+"）":"");
+  $("status").textContent=ok?"盈利中":"亏损中"; $("status").className="pill "+(ok?"ok":"no");
+  $("gap").textContent=isFinite(be)?"当前 ROAS 比保本线"+(R>=be?"高 ":"低 ")+Math.abs((R/be-1)*100).toFixed(0)+"%":"成本已超过售价，无法保本";
+  $("kMargin").textContent=pct(margin); $("kMargin").style.color=ok?"var(--good)":"var(--bad)";
+  $("kBe").textContent=isFinite(be)?be.toFixed(2)+"×":"—";
+  $("kBeS").textContent=isFinite(be)?"广告费上限 "+money(room)+"（售价 "+pct(room/P)+"）":"先降成本或提价";
+  $("kAd").textContent=money(ad); $("kAdS").textContent="占售价 "+pct(ad/P);
+  const d=n("daily"); $("kDay").textContent=money(profit*d);
+  $("kMonth").textContent="月 "+money(profit*d*30)+" · "+d+" 单/天";
+
+  const colors=["--c7","--c1","--c2","--c3","--c5","--c8","--c6","--c4","--c7"];
+  const all=[...b.items.filter(i=>Math.abs(i[1])>1e-9),["广告费 (ROAS "+R.toFixed(2)+"×)",ad]];
+  $("bars").innerHTML=all.map((it,i)=>{
+    const c=i===all.length-1?"--bad":colors[i%colors.length], w=Math.min(100,it[1]/P*100);
+    return `<div class="row"><div class="n"><span class="dot" style="background:var(${c})"></span>${it[0]}</div><div class="a">${money(it[1])} <small>· ${w.toFixed(0)}%</small></div><div class="bar"><i style="width:${w}%;background:var(${c})"></i></div></div>`;
+  }).join("");
+  $("tCost").textContent=money(b.total+ad);
+  $("tProfit").textContent=money(profit); $("tProfit").style.color=ok?"var(--good)":"var(--bad)";
+
+  let pts=[1,1.5,2,2.5,3,4,5,6].map(r=>({r}));
+  if(isFinite(be)&&be>0) pts.push({r:be,be:1});
+  pts.push({r:R,cur:1});
+  pts=pts.filter(q=>q.cur||q.be||!pts.some(o=>(o.cur||o.be)&&Math.abs(o.r-q.r)<0.001)).sort((a,c)=>a.r-c.r);
+  $("sens").innerHTML=pts.map(q=>{
+    const a=P/q.r, pr=P-b.total-a, cls=q.cur?"cur":q.be?"be":"";
+    const tag=q.cur?'<span class="tag c">当前</span>':q.be?'<span class="tag b">保本</span>':"";
+    return `<tr class="${cls}"><td>${q.r.toFixed(2)}×${tag}</td><td>${money(a)}</td><td class="${pr>=0?"pos":"neg"}">${money(pr)}</td><td class="${pr>=0?"pos":"neg"}">${pct(pr/P)}</td></tr>`;
+  }).join("");
+  if(typeof calcPrice==="function"&&$("tMargin"))calcPrice();
+  if(typeof calcPromo==="function"&&$("pDisc"))calcPromo();
+  if(typeof calcNew==="function"&&$("nCost"))calcNew();
+}
+
+/* ---------- 事件 ---------- */
+$("country").addEventListener("change",e=>{market=e.target.value;fillPlatform();applyMarket();});
+$("platform").addEventListener("change",e=>{plat=e.target.value;applyPlatform();const p=MARKETS[market].platforms[plat];$("sComm").value=p.comm;$("sAff").value=p.aff;calcStock();});
+$("cur").addEventListener("change",e=>{cur=e.target.value;manual=false;applyFx();labels();calc();});
+$("fx").addEventListener("input",()=>{manual=true;fxUI();});
+$("fxReset").addEventListener("click",()=>{manual=false;applyFx();calc();});
+["price","fx","cost","leg","tariff","last","ret","comm","minfee","extra","fixed","aff","bonus","vat","wht","roas","daily"].forEach(id=>$(id).addEventListener("input",()=>{if(id==="vat")labels();calc();}));
+$("whtOn").addEventListener("change",calc);
+
+
+
+/* ---------- 反推定价 ---------- */
+function minPrice(m,R){
+  const f=P=>P-base(P).total-P/R-m*P;
+  let lo=0, hi=Math.max(n("price"),1);
+  for(let i=0;i<60&&f(hi)<0;i++) hi*=2;
+  if(f(hi)<0) return null;
+  for(let i=0;i<80;i++){const mid=(lo+hi)/2; if(f(mid)>=0) hi=mid; else lo=mid;}
+  return hi;
+}
+let rpBest=null;
+function calcPrice(){
+  const m=n("tMargin")/100, R=n("roas"), fx=n("fx");
+  rpBest=minPrice(m,R);
+  $("rpLabel").textContent="ROAS "+R.toFixed(2)+"× 下，净利率 "+(m*100).toFixed(0)+"% 的最低售价";
+  if(rpBest==null){
+    $("rpPrice").textContent="无法达到"; $("rpPrice").style.color="var(--bad)";
+    $("rpSub").textContent="比例类成本加广告费已经超过 "+(100-m*100).toFixed(0)+"%，提价也达不到，需要降费率或提高 ROAS";
+    $("rpUse").hidden=true;
+  }else{
+    $("rpPrice").textContent=money(rpBest); $("rpPrice").style.color="var(--accent)";
+    const P=n("price"), diff=P-rpBest;
+    $("rpSub").textContent="≈ ¥"+(fx?rpBest/fx:0).toFixed(2)+" · 当前售价 "+money(P)+(diff>=0?"，已高出 "+money(diff):"，还差 "+money(-diff));
+    $("rpUse").hidden=false;
+  }
+  const cols=[...new Set([2,3,+R.toFixed(2),4,5])].sort((a,b)=>a-b);
+  $("rpHead").innerHTML="<tr><th>目标净利率</th>"+cols.map(c=>`<th>ROAS ${c.toFixed(2)}×</th>`).join("")+"</tr>";
+  const rows=[0,0.1,0.15,0.2,0.25,0.3];
+  if(!rows.some(r=>Math.abs(r-m)<1e-9)) rows.push(m);
+  rows.sort((a,b)=>a-b);
+  $("rpBody").innerHTML=rows.map(r=>`<tr class="${Math.abs(r-m)<1e-9?"cur":""}"><td>${r===0?"保本 0%":(r*100).toFixed(0)+"%"}</td>`+cols.map(c=>{const v=minPrice(r,c);return v==null?'<td class="na">达不到</td>':`<td>${money(v)}</td>`;}).join("")+"</tr>").join("");
+}
+$("tMargin").addEventListener("input",calcPrice);
+$("rpUse").addEventListener("click",()=>{if(rpBest!=null){const d=cur==="JPY"||cur==="KRW"||cur==="IDR"||cur==="VND"||cur==="CLP"||cur==="COP"?0:2;$("price").value=(Math.ceil(rpBest*10**d)/10**d).toFixed(d);calc();}});
+
+/* ---------- 大促折扣 ---------- */
+function promoAt(d,R){const P=n("price")*(1-d);const b=base(P);const pr=P-b.total-P/R;const room=P-b.total;return {P,pr,m:P?pr/P:0,be:room>0?P/room:Infinity};}
+function calcPromo(){
+  const d=n("pDisc")/100, Rn=n("roas"), Rp=n("pRoas")||Rn;
+  const a=promoAt(0,Rn), b=promoAt(d,Rp);
+  const row=(k,x,y,fmt,delta)=>`<tr><td>${k}</td><td>${fmt(x)}</td><td>${fmt(y)}</td><td class="${delta==null?"":(delta>=0?"pos":"neg")}">${delta==null?"—":(delta>=0?"+":"")+fmt(delta)}</td></tr>`;
+  const r2=v=>isFinite(v)?v.toFixed(2)+"×":"—";
+  $("promoBody").innerHTML=
+    row("售价",a.P,b.P,money,null)+
+    row("ROAS",Rn,Rp,r2,null)+
+    row("单均净利",a.pr,b.pr,money,b.pr-a.pr)+
+    `<tr><td>净利率</td><td>${pct(a.m)}</td><td>${pct(b.m)}</td><td class="${b.m>=a.m?"pos":"neg"}">${((b.m-a.m)*100>=0?"+":"")+((b.m-a.m)*100).toFixed(1)} 个点</td></tr>`+
+    `<tr><td>保本 ROAS</td><td>${r2(a.be)}</td><td>${r2(b.be)}</td><td>—</td></tr>`;
+  // 最大可打折扣（大促 ROAS 下保本）
+  let lo=0,hi=1;
+  if(promoAt(0,Rp).pr<0){$("promoVerdict").innerHTML=`在大促 ROAS ${r2(Rp)} 下，不打折也已经亏损，需要先提高 ROAS。`;return;}
+  for(let i=0;i<60;i++){const mid=(lo+hi)/2; if(promoAt(mid,Rp).pr>=0) lo=mid; else hi=mid;}
+  const need=a.pr>0?`；要保住日常每单 ${money(a.pr)} 的利润，大促期单量需要是平时的 <b>${b.pr>0?(a.pr/b.pr).toFixed(1)+" 倍":"—（大促单单亏损）"}</b>`:"";
+  $("promoVerdict").innerHTML=(b.pr>=0?`大促每单还赚 <b>${money(b.pr)}</b>`:`大促每单亏 <b>${money(-b.pr)}</b>`)+`。在大促 ROAS ${r2(Rp)} 下，最多可以打 <b>${(lo*100).toFixed(0)}% off</b> 还保本（到手价 ${money(n("price")*(1-lo))}）`+need+"。";
+}
+["pDisc","pRoas"].forEach(id=>$(id).addEventListener("input",calcPromo));
+
+/* ---------- 新品定价 ---------- */
+function nOpts(){const fx=n("fx")||1;return {cost:n("nCost"),leg:n("nLeg")+n("nPack"),tariff:n("nTariff")*n("nCost")/(n("nCost")||1),last:n("nLast"),ret:n("nRet"),bonus:0};}
+function nProfit(P,R){const b=base(P,nOpts());return P-b.total-P/R;}
+function nMin(m,R){const f=P=>nProfit(P,R)-m*P;let lo=0,hi=Math.max(n("price"),1);for(let i=0;i<60&&f(hi)<0;i++)hi*=2;if(f(hi)<0)return null;for(let i=0;i<80;i++){const mid=(lo+hi)/2;if(f(mid)>=0)hi=mid;else lo=mid;}return hi;}
+function niceUp(P){
+  const mode=$("nEnd").value, zero=["JPY","KRW","IDR","VND","CLP","COP"].includes(cur);
+  if(mode==="none") return P;
+  if(zero||P>=100){
+    const step=P>=100000?1000:P>=10000?100:P>=1000?10:1;
+    let x=Math.ceil(P/step)*step;
+    if(mode==="9"){ if(step>=10){x=Math.ceil((P+step*0.1)/step)*step-step*0.1;} else {x=Math.ceil((P+1)/10)*10-1; if(x<P)x+=10;} }
+    return x;
+  }
+  if(mode==="9"){let x=Math.ceil(P)-0.01; if(x<P)x+=1; return x;}
+  return Math.ceil(P);
+}
+function calcNew(){
+  const m=n("nMargin")/100, Rs=n("nRoas"), Rn=n("nRoasNew"), p=MARKETS[market].platforms[plat];
+  $("nPlat").textContent=`当前平台：${MARKETS[market].name} ${p.name} · 佣金 ${n("comm")}%${n("extra")?" + 服务费 "+n("extra")+"%":""} · 达人 ${n("aff")}% · 增值税 ${n("vat")}%${$("whtOn").checked&&n("wht")?" · 代扣 "+n("wht")+"%":""}`;
+  const raw=nMin(m,Rs), be=nMin(0,Rs);
+  if(raw==null){$("nPrice").textContent="无法达到";$("nPrice").style.color="var(--bad)";$("nPriceSub").textContent="比例类成本加广告费已超过 "+(100-m*100).toFixed(0)+"%，请降低目标利润率或提高 ROAS";["nBe","nProfit","nNew","nBeRoas"].forEach(i=>$(i).textContent="—");$("nVerdict").textContent="";$("nComp2").hidden=true;}
+  else{
+    const P=niceUp(raw), fx=n("fx")||1, ps=nProfit(P,Rs), pn=nProfit(P,Rn);
+    const b=base(P,nOpts()), room=P-b.total;
+    $("nPrice").textContent=money(P); $("nPrice").style.color="var(--accent)";
+    $("nPriceSub").textContent="≈ ¥"+(P/fx).toFixed(2)+" · 反推值 "+money(raw)+"，按尾数规则取整";
+    $("nBe").textContent=be==null?"—":money(be); $("nBeS").textContent="稳定期 ROAS "+Rs.toFixed(2)+"× 下";
+    const col=v=>v>=0?"var(--good)":"var(--bad)";
+    $("nProfit").textContent=money(ps); $("nProfit").style.color=col(ps); $("nProfitS").textContent="净利率 "+pct(ps/P);
+    $("nNew").textContent=money(pn); $("nNew").style.color=col(pn); $("nNewS").textContent="ROAS "+Rn.toFixed(2)+"× · 净利率 "+pct(pn/P);
+    $("nBeRoas").textContent=room>0?(P/room).toFixed(2)+"×":"—";
+    const comp=n("nComp");
+    if(comp>0){const d=P/comp-1;$("nComp2").hidden=false;$("nComp2").className="pill "+(d<=0.05?"ok":"no");$("nComp2").textContent="比竞品"+(d>=0?"高 ":"低 ")+Math.abs(d*100).toFixed(0)+"%";}
+    else $("nComp2").hidden=true;
+    let v=pn>=0?`按建议售价，新品期（ROAS ${Rn.toFixed(2)}×）每单仍赚 <b>${money(pn)}</b>，可以直接开广告起量。`:`按建议售价，新品期（ROAS ${Rn.toFixed(2)}×）每单亏 <b>${money(-pn)}</b>，这是起量期的学费；每 100 单约 <b>${money(-pn*100)}</b>。`;
+    if(comp>0){const cp=nProfit(comp,Rs);v+=cp>=0?` 如果跟竞品定价 ${money(comp)}，稳定期每单赚 ${money(cp)}（净利率 ${pct(cp/comp)}）。`:` 如果跟竞品定价 ${money(comp)}，稳定期每单也会亏 ${money(-cp)}，价格上拼不过，需要压成本或做差异化。`;}
+    $("nVerdict").innerHTML=v;
+  }
+  const cols=[...new Set([+Rn.toFixed(2),2,3,+Rs.toFixed(2),4,5])].sort((a,b)=>a-b);
+  $("nHead").innerHTML="<tr><th>目标净利率</th>"+cols.map(c=>`<th>ROAS ${c.toFixed(2)}×${c===+Rs.toFixed(2)?'<span class="tag c">稳定</span>':c===+Rn.toFixed(2)?'<span class="tag b">新品</span>':""}</th>`).join("")+"</tr>";
+  const rows=[0,0.1,0.15,0.2,0.25,0.3]; if(!rows.some(r=>Math.abs(r-m)<1e-9)) rows.push(m); rows.sort((a,b)=>a-b);
+  $("nBody").innerHTML=rows.map(r=>`<tr class="${Math.abs(r-m)<1e-9?"cur":""}"><td>${r===0?"保本 0%":(r*100).toFixed(0)+"%"}</td>`+cols.map(c=>{const x=nMin(r,c);return x==null?'<td class="na">达不到</td>':`<td>${money(x)}</td>`;}).join("")+"</tr>").join("");
+}
+["nCost","nLeg","nTariff","nLast","nPack","nRet","nMargin","nComp","nRoasNew","nRoas"].forEach(id=>$(id).addEventListener("input",calcNew));
+$("nEnd").addEventListener("change",calcNew);
+/* ---------- 备货与物流 ---------- */
+function syncStock(){
+  const m=MARKETS[market], p=m.platforms[plat];
+  $("sPrice").value=m.price; $("sVat").value=m.vat; $("sWht").value=$("whtOn").checked?n("wht"):0;
+  $("sComm").value=p.comm; $("sAff").value=p.aff;
+}
+const yuan=v=>(v<0?"-¥":"¥")+Math.abs(v).toLocaleString("en-US",{minimumFractionDigits:1,maximumFractionDigits:1});
+function stockMode(rate,days){
+  const fx=n("fx")||1, P=n("sPrice")/fx, vat=n("sVat"), net=P/(1+vat/100);
+  const cost=n("sCost"), head=n("sWeight")*rate, pack=n("sPack");
+  const lines=[
+    ["增值税",P-net],["进货成本",cost],["头程运费",head],["关税+清关",cost*n("sTariff")/100],
+    ["海外仓上架+操作",n("sWh")],["尾程派送",n("sLast")/fx],["包材",pack],
+    ["广告费",P*n("sAcos")/100],["平台佣金",P*n("sComm")/100],["达人佣金",P*n("sAff")/100],
+    ["汇损",P*n("sFxLoss")/100],["退货+客诉摊销",P*n("sRet")/100],["所得税代扣",net*n("sWht")/100]
+  ].filter(l=>Math.abs(l[1])>1e-9);
+  const total=lines.reduce((s,l)=>s+l[1],0), profit=P-total, ad=P*n("sAcos")/100, pre=profit+ad;
+  const qty=Math.ceil(n("sDaily")*days*n("sMult"));
+  return {P,lines,profit,margin:P?profit/P:0,be:pre>0?P/pre:Infinity,beAcos:P?pre/P:0,qty,days,capital:(cost+head+pack+cost*n("sTariff")/100)*qty};
+}
+function modeCard(el,label,r){
+  const ok=r.profit>=0, c=ok?"var(--good)":"var(--bad)";
+  el.innerHTML=`<span class="chip">${label}</span>
+  <div class="sub" style="margin-top:10px">下次备货数量（${n("sMult")} 备 · ${r.days} 天时效）</div>
+  <div class="qty">${r.qty.toLocaleString()}<small>件</small></div>
+  <div class="mk">
+    <div class="k"><div class="l">单件净利</div><div class="v" style="color:${c}">${yuan(r.profit)}</div></div>
+    <div class="k"><div class="l">利润率</div><div class="v" style="color:${c}">${pct(r.margin)}</div></div>
+    <div class="k"><div class="l">保本 ROAS</div><div class="v">${isFinite(r.be)?r.be.toFixed(2)+"×":"—"}</div></div>
+    <div class="k"><div class="l">保本 ACOS</div><div class="v">${pct(r.beAcos)}</div></div>
+  </div>
+  <div class="lines">
+    <div class="ln head"><span>售价（折人民币）</span><span>${yuan(r.P)}</span></div>
+    ${r.lines.map(l=>`<div class="ln"><span>${l[0]}</span><span>-${yuan(l[1]).replace("-","")}</span></div>`).join("")}
+    <div class="ln res"><span>单件净利</span><span style="color:${c}">${yuan(r.profit)}</span></div>
+  </div>
+  <div class="cap"><div>备货资金投入<small>(进货 + 头程 + 关税 + 包材) × ${r.qty.toLocaleString()} 件</small></div><b>${yuan(r.capital)}</b></div>`;
+}
+function calcStock(){
+  $("sPriceNote").textContent=n("sVat")>0?"含税":"不含税";
+  const sea=stockMode(n("seaRate"),n("seaDays")), air=stockMode(n("airRate"),n("airDays"));
+  modeCard($("mSea"),"🚢 海运",sea); modeCard($("mAir"),"✈️ 空运",air);
+  const dp=sea.profit-air.profit, mo=n("sDaily")*30;
+  $("verdict").innerHTML=`海运每件比空运${dp>=0?"多赚":"少赚"} <b>${yuan(Math.abs(dp))}</b>，按日动销 ${n("sDaily")} 件算，每月差 <b>${yuan(Math.abs(dp*mo))}</b>。代价是时效多 ${n("seaDays")-n("airDays")} 天，备货多 ${(sea.qty-air.qty).toLocaleString()} 件，库存资金多压 <b>${yuan(sea.capital-air.capital)}</b>。`;
+}
+["sCost","sPrice","sDaily","sWeight","sMult","sLast","seaRate","seaDays","airRate","airDays","sWh","sPack","sAcos","sComm","sAff","sFxLoss","sRet","sTariff","sVat","sWht"].forEach(id=>$(id).addEventListener("input",calcStock));
+
+/* ---------- 标签页 ---------- */
+function showTab(t){
+  document.querySelectorAll(".tabs button").forEach(b=>b.setAttribute("aria-selected",b.dataset.tab===t));
+  $("tab-ads").hidden=t!=="ads"; $("tab-price").hidden=t!=="price"; $("tab-stock").hidden=t!=="stock";
+  try{localStorage.setItem("tab",t);}catch(e){}
+}
+document.querySelectorAll(".tabs button").forEach(b=>b.addEventListener("click",()=>showTab(b.dataset.tab)));
+
+fillCountry(); fillCur(); fillPlatform(); applyMarket(); loadRates();
+{let t="ads";try{t=localStorage.getItem("tab")||t;}catch(e){} if(!["ads","price","stock"].includes(t))t="ads"; if(location.hash==="#stock")t="stock"; if(location.hash==="#price")t="price"; if(location.hash==="#ads")t="ads"; showTab(t);}
+</script>
+</body></html>
